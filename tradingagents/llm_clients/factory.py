@@ -5,6 +5,7 @@ from .openai_client import OpenAIClient
 from .anthropic_client import AnthropicClient
 from .google_client import GoogleClient
 from .azure_client import AzureOpenAIClient
+from .opencode_client import OpencodeClient
 
 # Providers that use the OpenAI-compatible chat completions API
 _OPENAI_COMPATIBLE = (
@@ -45,5 +46,8 @@ def create_llm_client(
 
     if provider_lower == "azure":
         return AzureOpenAIClient(model, base_url, **kwargs)
+
+    if provider_lower in ("opencode", "opencode-go"):
+        return OpencodeClient(model, base_url, provider=provider_lower, **kwargs)
 
     raise ValueError(f"Unsupported LLM provider: {provider}")

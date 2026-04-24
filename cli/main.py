@@ -5,6 +5,7 @@ from pathlib import Path
 from functools import wraps
 from rich.console import Console
 from dotenv import load_dotenv
+import markdown
 
 # Load environment variables
 load_dotenv()
@@ -579,7 +580,7 @@ def get_user_selections():
             )
         )
         thinking_level = ask_gemini_thinking_config()
-    elif provider_lower == "openai":
+    elif provider_lower in ("openai", "opencode", "opencode-go"):
         console.print(
             create_question_box(
                 "Step 8: Reasoning Effort",
@@ -722,7 +723,44 @@ def save_report_to_disk(final_state, ticker: str, save_path: Path):
 
     # Write consolidated report
     header = f"# Trading Analysis Report: {ticker}\n\nGenerated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-    (save_path / "complete_report.md").write_text(header + "\n\n".join(sections))
+    md_content = header + "\n\n".join(sections)
+    (save_path / "complete_report.md").write_text(md_content)
+
+    html_body = markdown.markdown(md_content, extensions=["tables", "fenced_code", "toc"])
+    html_content = (
+        "<!DOCTYPE html>\n"
+        "<html lang=\"en\">\n"
+        "<head>\n"
+        "<meta charset=\"UTF-8\">\n"
+        f"<title>Trading Analysis Report: {ticker}</title>\n"
+        "<style>\n"
+        "body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;"
+        "line-height:1.6;max-width:900px;margin:40px auto;padding:0 20px;color:#333;background:#fff}\n"
+        "h1,h2,h3,h4{color:#1a1a1a;border-bottom:1px solid #e1e4e8;padding-bottom:.3em;margin-top:1.5em}\n"
+        "h1{font-size:1.75em;border-bottom-width:2px}\n"
+        "h2{font-size:1.5em}\n"
+        "h3{font-size:1.25em;border-bottom:none}\n"
+        "pre{background:#f6f8fa;border-radius:6px;padding:16px;overflow-x:auto}\n"
+        "code{font-family:SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;"
+        "background:#f6f8fa;padding:.2em .4em;border-radius:3px;font-size:.9em}\n"
+        "pre code{background:none;padding:0}\n"
+        "blockquote{border-left:4px solid #dfe2e5;color:#6a737d;padding:0 1em;margin:0}\n"
+        "table{border-collapse:collapse;width:100%;margin:1em 0}\n"
+        "th,td{border:1px solid #dfe2e5;padding:6px 13px}\n"
+        "th{background:#f6f8fa;font-weight:600}\n"
+        "tr:nth-child(2n){background:#f6f8fa}\n"
+        "a{color:#0366d6;text-decoration:none}\n"
+        "a:hover{text-decoration:underline}\n"
+        "hr{border:0;border-top:1px solid #e1e4e8;margin:1.5em 0}\n"
+        "</style>\n"
+        "</head>\n"
+        "<body>\n"
+        f"{html_body}\n"
+        "</body>\n"
+        "</html>"
+    )
+    (save_path / "complete_report.html").write_text(html_content)
+
     return save_path / "complete_report.md"
 
 
@@ -1186,7 +1224,8 @@ def run_analysis():
         try:
             report_file = save_report_to_disk(final_state, selections["ticker"], save_path)
             console.print(f"\n[green]✓ Report saved to:[/green] {save_path.resolve()}")
-            console.print(f"  [dim]Complete report:[/dim] {report_file.name}")
+            console.print(f"  [dim]Markdown:[/dim] {report_file.name}")
+            console.print(f"  [dim]HTML:[/dim] complete_report.html")
         except Exception as e:
             console.print(f"[red]Error saving report: {e}[/red]")
 

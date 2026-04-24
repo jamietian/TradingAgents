@@ -99,6 +99,35 @@ MODEL_OPTIONS: ProviderModeOptions = {
             ("Custom model ID", "custom"),
         ],
     },
+    "opencode": {
+        "quick": [
+            ("GPT 5.4 Mini - Fast, strong coding and tool use", "gpt-5.4-mini"),
+            ("GPT 5.4 Nano - Cheapest, high-volume tasks", "gpt-5.4-nano"),
+            ("Claude Haiku 4.5 - Fast, near-instant responses", "claude-haiku-4-5"),
+            ("Claude Sonnet 4.5 - Agents and coding", "claude-sonnet-4-5"),
+        ],
+        "deep": [
+            ("GPT 5.4 - Latest frontier, 1M context", "gpt-5.4"),
+            ("GPT 5.4 Pro - Most capable, expensive", "gpt-5.4-pro"),
+            ("Claude Opus 4.6 - Most intelligent, agents and coding", "claude-opus-4-6"),
+            ("Claude Sonnet 4.6 - Best speed and intelligence balance", "claude-sonnet-4-6"),
+        ],
+    },
+    "opencode-go": {
+        "quick": [
+            ("Kimi K2.5 - Fast, capable reasoning", "kimi-k2.5"),
+            ("MiMo-V2.5 - Efficient coding model", "mimo-v2.5"),
+            ("Qwen3.5 Plus - Balanced performance", "qwen3.5-plus"),
+            ("GLM-5 - General purpose", "glm-5"),
+        ],
+        "deep": [
+            ("Kimi K2.6 - Advanced reasoning", "kimi-k2.6"),
+            ("MiMo-V2.5-Pro - Professional coding", "mimo-v2.5-pro"),
+            ("Qwen3.6 Plus - Strong reasoning", "qwen3.6-plus"),
+            ("GLM-5.1 - Latest GLM model", "glm-5.1"),
+            ("MiniMax M2.7 - Large context", "minimax-m2.7"),
+        ],
+    },
     # OpenRouter: fetched dynamically. Azure: any deployed model name.
     "ollama": {
         "quick": [
