@@ -726,7 +726,10 @@ def save_report_to_disk(final_state, ticker: str, save_path: Path):
     md_content = header + "\n\n".join(sections)
     (save_path / "complete_report.md").write_text(md_content)
 
-    html_body = markdown.markdown(md_content, extensions=["tables", "fenced_code", "toc"])
+    md = markdown.Markdown(extensions=["tables", "fenced_code", "toc"])
+    html_body = md.convert(md_content)
+    toc_html = md.toc
+
     html_content = (
         "<!DOCTYPE html>\n"
         "<html lang=\"en\">\n"
@@ -735,11 +738,21 @@ def save_report_to_disk(final_state, ticker: str, save_path: Path):
         f"<title>Trading Analysis Report: {ticker}</title>\n"
         "<style>\n"
         "body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;"
-        "line-height:1.6;max-width:900px;margin:40px auto;padding:0 20px;color:#333;background:#fff}\n"
-        "h1,h2,h3,h4{color:#1a1a1a;border-bottom:1px solid #e1e4e8;padding-bottom:.3em;margin-top:1.5em}\n"
-        "h1{font-size:1.75em;border-bottom-width:2px}\n"
-        "h2{font-size:1.5em}\n"
-        "h3{font-size:1.25em;border-bottom:none}\n"
+        "line-height:1.6;color:#333;background:#fff;margin:0;padding:0}\n"
+        ".container{display:flex;max-width:1400px;margin:0 auto}\n"
+        ".sidebar{width:260px;position:sticky;top:0;height:100vh;overflow-y:auto;"
+        "border-right:1px solid #e1e4e8;padding:24px;background:#f6f8fa}\n"
+        ".sidebar h2{font-size:1em;margin:0 0 12px 0;color:#1a1a1a;border-bottom:none;padding-bottom:0}\n"
+        ".sidebar ul{list-style:none;padding:0;margin:0}\n"
+        ".sidebar li{margin:6px 0}\n"
+        ".sidebar a{color:#0366d6;text-decoration:none;font-size:.9em}\n"
+        ".sidebar a:hover{text-decoration:underline}\n"
+        ".main-content{flex:1;padding:40px;max-width:900px}\n"
+        ".main-content h1,.main-content h2,.main-content h3,.main-content h4{color:#1a1a1a;"
+        "border-bottom:1px solid #e1e4e8;padding-bottom:.3em;margin-top:1.5em}\n"
+        ".main-content h1{font-size:1.75em;border-bottom-width:2px}\n"
+        ".main-content h2{font-size:1.5em}\n"
+        ".main-content h3{font-size:1.25em;border-bottom:none}\n"
         "pre{background:#f6f8fa;border-radius:6px;padding:16px;overflow-x:auto}\n"
         "code{font-family:SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;"
         "background:#f6f8fa;padding:.2em .4em;border-radius:3px;font-size:.9em}\n"
@@ -749,13 +762,23 @@ def save_report_to_disk(final_state, ticker: str, save_path: Path):
         "th,td{border:1px solid #dfe2e5;padding:6px 13px}\n"
         "th{background:#f6f8fa;font-weight:600}\n"
         "tr:nth-child(2n){background:#f6f8fa}\n"
-        "a{color:#0366d6;text-decoration:none}\n"
-        "a:hover{text-decoration:underline}\n"
+        ".main-content a{color:#0366d6;text-decoration:none}\n"
+        ".main-content a:hover{text-decoration:underline}\n"
         "hr{border:0;border-top:1px solid #e1e4e8;margin:1.5em 0}\n"
+        "@media print{.sidebar{display:none}\n"
+        ".main-content{padding:20px}}\n"
         "</style>\n"
         "</head>\n"
         "<body>\n"
+        "<div class=\"container\">\n"
+        "<nav class=\"sidebar\">\n"
+        "<h2>Contents</h2>\n"
+        f"{toc_html}\n"
+        "</nav>\n"
+        "<main class=\"main-content\">\n"
         f"{html_body}\n"
+        "</main>\n"
+        "</div>\n"
         "</body>\n"
         "</html>"
     )
