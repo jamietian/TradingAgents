@@ -115,18 +115,19 @@ MODEL_OPTIONS: ProviderModeOptions = {
     },
     "opencode-go": {
         "quick": [
-            ("Kimi K2.5 - Fast, capable reasoning", "kimi-k2.5"),
-            ("MiMo-V2.5 - Efficient coding model", "mimo-v2.5"),
-            ("Qwen3.5 Plus - Balanced performance", "qwen3.5-plus"),
-            ("GLM-5 - General purpose", "glm-5"),
+            ("Qwen3.5 Plus - Best cost/performance balance", "qwen3.5-plus"),
+            ("MiniMax M2.5 - Ultra low cost, large context", "minimax-m2.5"),
+            ("MiMo-V2.5 - Efficient coding and analysis", "mimo-v2.5"),
+            ("Kimi K2.6 - Advanced reasoning and analysis", "kimi-k2.6"),
+            ("GLM-5 - General purpose, stable", "glm-5"),
+            ("DeepSeek V4 Flash - Fast inference", "deepseek-v4-flash"),
         ],
         "deep": [
-            ("Kimi K2.6 - Advanced reasoning", "kimi-k2.6"),
-            ("Kimi K2.5 - Fast, capable reasoning", "kimi-k2.5"),
-            ("MiMo-V2.5-Pro - Professional coding", "mimo-v2.5-pro"),
+            ("Kimi K2.6 - Advanced reasoning and analysis", "kimi-k2.6"),
+            ("GLM-5.1 - Latest frontier model", "glm-5.1"),
             ("Qwen3.6 Plus - Strong reasoning", "qwen3.6-plus"),
-            ("GLM-5.1 - Latest GLM model", "glm-5.1"),
-            ("MiniMax M2.7 - Large context", "minimax-m2.7"),
+            ("MiMo-V2.5-Pro - Professional coding and tool use", "mimo-v2.5-pro"),
+            ("DeepSeek V4 Pro - Most capable DeepSeek", "deepseek-v4-pro"),
         ],
     },
     # OpenRouter: fetched dynamically. Azure: any deployed model name.
