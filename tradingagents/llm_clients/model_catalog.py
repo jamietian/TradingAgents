@@ -122,6 +122,7 @@ MODEL_OPTIONS: ProviderModeOptions = {
         ],
         "deep": [
             ("Kimi K2.6 - Advanced reasoning", "kimi-k2.6"),
+            ("Kimi K2.5 - Fast, capable reasoning", "kimi-k2.5"),
             ("MiMo-V2.5-Pro - Professional coding", "mimo-v2.5-pro"),
             ("Qwen3.6 Plus - Strong reasoning", "qwen3.6-plus"),
             ("GLM-5.1 - Latest GLM model", "glm-5.1"),

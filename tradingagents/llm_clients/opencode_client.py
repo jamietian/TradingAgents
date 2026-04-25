@@ -1,23 +1,65 @@
 import os
-from typing import Any, Optional
+from typing import Any, Optional, Mapping
 
 from langchain_openai import ChatOpenAI
+from langchain_openai.chat_models.base import (
+    _convert_message_to_dict as _orig_convert,
+    _convert_dict_to_message as _orig_dict_to_msg,
+)
 from langchain_anthropic import ChatAnthropic
+from langchain_core.messages import AIMessage
 
 from .base_client import BaseLLMClient, normalize_content
 from .validators import validate_model
 
 
-class NormalizedChatOpenAI(ChatOpenAI):
-    """ChatOpenAI with normalized content output."""
+def _convert_message_to_dict_patched(message, api="chat/completions"):
+    message_dict = _orig_convert(message, api=api)
+    if isinstance(message, AIMessage):
+        reasoning = message.additional_kwargs.get("reasoning_content")
+        if reasoning is not None:
+            message_dict["reasoning_content"] = reasoning
+    return message_dict
 
+
+def _convert_dict_to_message_patched(_dict: Mapping[str, Any]):
+    message = _orig_dict_to_msg(_dict)
+    if isinstance(message, AIMessage):
+        reasoning = _dict.get("reasoning_content")
+        if reasoning is not None:
+            message.additional_kwargs["reasoning_content"] = reasoning
+    return message
+
+
+class NormalizedChatOpenAI(ChatOpenAI):
     def invoke(self, input, config=None, **kwargs):
         return normalize_content(super().invoke(input, config, **kwargs))
 
+    def _get_request_payload(self, input_, *, stop=None, **kwargs):
+        from langchain_openai.chat_models import base as openai_base
+        original = openai_base._convert_message_to_dict
+        openai_base._convert_message_to_dict = _convert_message_to_dict_patched
+        try:
+            payload = super()._get_request_payload(input_, stop=stop, **kwargs)
+        finally:
+            openai_base._convert_message_to_dict = original
+        if self.model_name and self.model_name.lower().startswith("kimi-k2"):
+            for msg in payload.get("messages", []):
+                if msg.get("role") == "assistant" and msg.get("tool_calls") and "reasoning_content" not in msg:
+                    msg["reasoning_content"] = ""
+        return payload
+
+    def _create_chat_result(self, response, generation_info=None):
+        from langchain_openai.chat_models import base as openai_base
+        original = openai_base._convert_dict_to_message
+        openai_base._convert_dict_to_message = _convert_dict_to_message_patched
+        try:
+            return super()._create_chat_result(response, generation_info=generation_info)
+        finally:
+            openai_base._convert_dict_to_message = original
+
 
 class NormalizedChatAnthropic(ChatAnthropic):
-    """ChatAnthropic with normalized content output."""
-
     def invoke(self, input, config=None, **kwargs):
         return normalize_content(super().invoke(input, config, **kwargs))
 
@@ -40,12 +82,6 @@ _API_KEY_ENV = "OPENCODE_API_KEY"
 
 
 class OpencodeClient(BaseLLMClient):
-    """Client for OpenCode Zen and OpenCode Go providers.
-
-    Routes to OpenAI or Anthropic client based on model prefix.
-    Zen GPT models use Responses API; Claude and MiniMax use Messages API.
-    """
-
     def __init__(
         self,
         model: str,
@@ -83,6 +119,9 @@ class OpencodeClient(BaseLLMClient):
 
         if self.provider == "opencode":
             llm_kwargs["use_responses_api"] = True
+
+        if self.model.lower().startswith("kimi-k2"):
+            llm_kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
 
         return NormalizedChatOpenAI(**llm_kwargs)
 
